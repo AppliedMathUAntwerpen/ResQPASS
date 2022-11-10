@@ -1,4 +1,4 @@
-function [ x_k, working_set_old, it, lam, convFlag] = qpas_schur(G,c,A,b,x0,working_set,Q,R,maxiter)
+function [ x_k, working_set_old, it, lam, convFlag, nActive] = qpas_schur(G,c,A,b,x0,working_set,Q,R,maxiter)
 
 %    Solve a quadratic problem with the Active Set algorithm.
 %    See Numerical Optimization (Nocedal and Wright) page 472.
@@ -43,12 +43,12 @@ m = size(A, 1); x_k = x0; tol = 10^-6;
 L = chol(G)'; 
 
 Ginv_c = (L')\(L\c); 
-
+nActive = [];
 for it = 1:maxiter
 %     it
     working_set_old = working_set;
-    nact = length(working_set); 
-     
+    nact = length(working_set);
+    nActive = [nActive, nact]; 
 %       Solve the KKT system for the equality constrained problem:
 %       0.5 * p^T * G * p + (G * x_k + c)^T * p; s.t: A_i * p = 0
 %       (for all rows i of A in the current working set)
