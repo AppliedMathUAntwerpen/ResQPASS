@@ -44,6 +44,9 @@ L = chol(G)';
 
 Ginv_c = (L')\(L\c); 
 nActive = [];
+
+non_working_set = MY_setdiff(1:m,working_set);
+
 for it = 1:maxiter
 %     it
     working_set_old = working_set;
@@ -85,18 +88,24 @@ for it = 1:maxiter
     Ap  = A*p;
     Ap_pos = find(Ap > 0);
     
-    indices  = MY_intersect(MY_setdiff(1:m,working_set),Ap_pos);
+    indices  = MY_intersect(non_working_set,Ap_pos);
+%     indices  = MY_intersect(MY_setdiff(1:m,working_set),Ap_pos);
     
-    alphas = (b(indices) - A(indices,:)*x_k)./Ap(indices);
+    alphas = A(indices,:)*x_k;
+    alphas = b(indices)-alphas;
+    alphas = alphas./Ap(indices);
+
+%     (b(indices) - A(indices,:)*x_k)./Ap(indices);
     
     [alpha,min_alpha_idx] = min(alphas);
     
     if(alpha<=1)
     bcidx = indices(min_alpha_idx);
-    
+   
     % Add blocking constraint to working set
     working_set = [working_set,bcidx];
-    Ginv_A = [Ginv_A, (L')\(L\A(bcidx,:)')];
+    non_working_set(non_working_set == bcidx) = [];
+    Ginv_A = [Ginv_A, linsolve(L',linsolve(L,(A(bcidx,:)'), struct('LT', true)), linsolveOpts)];
     column = A(working_set(1:end-1), :)*Ginv_A(:,end);
     row = A(bcidx, :)*Ginv_A;
     [Q,R] = qrinsert(Q,R,size(R,2)+1,column,'col');
@@ -131,6 +140,7 @@ for it = 1:maxiter
 %       that must be removed from the working set.      
 
       if(min_lam < 0)
+          non_working_set = [non_working_set, working_set(min_lam_idx)];
           working_set(min_lam_idx) = [];
           Ginv_A(:,min_lam_idx) = [];
 %           schur(min_lam_idx,:) = [];
