@@ -41,20 +41,20 @@ f = -b'*A;
 %%
 i=0;
 mVec = [0,1,2,4,8,16,32,64,128];
-mVec = 1;
+% mVec = 1;
 for m = mVec
 i = i+1;
 
 l = -1e6*ones(N,1);
 u =  1e6*ones(N,1);
-% l(1:m) = -0.5*abs(x_exact(1:m))-1e-2;
-% u(1:m) =  0.5*abs(x_exact(1:m))+1e-2;
+l(1:m) = -0.5*abs(x_exact(1:m))-1e-2;
+u(1:m) =  0.5*abs(x_exact(1:m))+1e-2;
 % l(1:m) = -ones(m,1);
 % u(1:m) =  ones(m,1);
 
 %comment to enable limited bounds
-l = -ones(N,1);
-u =  ones(N,1);
+% l = -ones(N,1);
+% u =  ones(N,1);
 %%  exact solution
 
 
@@ -62,8 +62,8 @@ sol = quadprog(H,f,[],[],[],[], l, u);
 
 exact_obj(i) = (A*sol-b)'*(A*sol-b);
 %% Approximate solution
-% [y,V,x,obj{i},res{i},WS,~,LAM,MU] = subspace_qpas_restarted_krylov_functie(A,b,l,u);
-[y,V,x,obj,res,WS,nIters,LAM,MU] = subspace_qpas_restarted_krylov_functie(A,b,l,u);
+[y,V,x,obj{i},res{i},WS,~,LAM,MU] = subspace_qpas_restarted_krylov_functie(A,b,l,u);
+% [y,V,x,obj,res,WS,nIters,LAM,MU] = subspace_qpas_restarted_krylov_functie(A,b,l,u);
 
 
 end
@@ -73,28 +73,30 @@ end
 figure;
 subplot(1,2,1)
 for i = 1:length(mVec)
-%     semilogy(res{i})
-    semilogy(res)
+    semilogy(res{i})
+%     semilogy(res)
     hold on;
     xlabel('Iteration')
 end
 title('Norm of residual')
-% leg = legend(num2str(mVec'));
-% title(leg,'m=')
+leg = legend(num2str(mVec'));
+title(leg,'$m_{\max}=$')
 
 % figure;
 subplot(1,2,2)
 for i = 1:length(mVec)
-%     semilogy(abs(obj{i}-exact_obj(i)))
-    semilogy(abs(obj-exact_obj))
+    semilogy(abs(obj{i}-exact_obj(i)))
+%     semilogy(abs(obj-exact_obj))
     hold on;
     xlabel('Iteration')
 end
 title('Error objective')
-% leg = legend(num2str(mVec'));
-% title(leg,'m=')
+leg = legend(num2str(mVec'));
+title(leg,'$m_{\max}=$')
 
 %% Warm start behaviour
+exact_obj = exact_obj(end);
+
 tic
 [y_ws,V_ws,x_ws,obj_ws,res_ws,WS_ws,nIters_ws,LAM_ws,MU_ws] = subspace_qpas_restarted_krylov_functie(A,b,l,u,300);
 time_ws = toc;

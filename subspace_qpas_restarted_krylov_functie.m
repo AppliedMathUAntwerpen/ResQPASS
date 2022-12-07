@@ -34,22 +34,38 @@ nIters = [];
     end
     maxit = min(M,N);
     AV = A*V;
-    H=[];
+%     H=[];
+    L=[];
     for it=1:maxit
 %         it
         if ~warmStart
             ws = [];
         end
-
-        H(it,it) = AV(:,it)'*AV(:,it);
-        if (it>1)
-            H(1:it-1,it) = AV(:,1:it-1)'*AV(:,it);
-            H(it,1:it-1) = AV(:,it)'*AV(:,1:it-1);
+% 
+%         H(it,it) = AV(:,it)'*AV(:,it);
+%         if (it>1)
+%             H(1:it-1,it) = AV(:,1:it-1)'*AV(:,it);
+%             H(it,1:it-1) = AV(:,it)'*AV(:,1:it-1);
+%         end
+        
+        
+        try
+        if it>1
+            U12 = linsolve(L,AV(:,1:it-1)'*AV(:,it),struct('LT', true));
+            L = [   L, zeros(it-1,1);
+                    U12',sqrt(AV(:,it)'*AV(:,it)-U12'*U12)];
+        else
+            L = sqrt(AV(:,it)'*AV(:,it));
         end
+        
+        if prod(diag(L)) < 1e-10
+            throw(MException('cholesky:singular', 'Matrix no longer pos. def.'))
+        end
+
         f = -r'*AV;
 
-        try
-        [y, ws, innerIters, lagMult] = qpas_schur(H,f',[V;-V],[u,-l],[y;0],ws,[],[],maxInnerIt);
+        
+        [y, ws, innerIters, lagMult] = qpas_schur(L,f',[V;-V],[u,-l],[y;0],ws,[],[],maxInnerIt);
         catch
             maxit = it;
             warning("Stopped because matrix was not positive definite")

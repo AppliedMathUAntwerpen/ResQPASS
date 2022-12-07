@@ -1,4 +1,4 @@
-function [ x_k, working_set_old, it, lam, convFlag, nActive] = qpas_schur(G,c,A,b,x0,working_set,Q,R,maxiter)
+function [ x_k, working_set_old, it, lam, convFlag, nActive] = qpas_schur(L,c,A,b,x0,working_set,Q,R,maxiter)
 
 %    Solve a quadratic problem with the Active Set algorithm.
 %    See Numerical Optimization (Nocedal and Wright) page 472.
@@ -14,7 +14,7 @@ function [ x_k, working_set_old, it, lam, convFlag, nActive] = qpas_schur(G,c,A,
 %     
 %     Parameters
 %     ----------
-%     G : Symmetric positive definite matrix, size = (n, n)
+%     L lower cholesky factor of G : Symmetric positive definite matrix, size = (n, n)
 %     c : Vector, size = (n,1)
 %     A : Matrix defining the linear inequality constraints.
 %         shape = (m, n)
@@ -40,7 +40,7 @@ linsolveOpts.UT = true;
 
 m = size(A, 1); x_k = x0; tol = 10^-6; 
 
-L = chol(G)'; 
+% L = chol(G)'; 
 
 Ginv_c = (L')\(L\c); 
 nActive = [];
@@ -70,7 +70,7 @@ for it = 1:maxiter
     rhs = [];
    else
        if it == 1
-           Ginv_A = linsolve(L',linsolve(L,(A(working_set,:)'), struct('LT', true)), linsolveOpts); % dit kan efficienter
+           Ginv_A = linsolve(L',linsolve(L,(A(working_set,:)'), struct('LT', true)), linsolveOpts);
 %            Ginv_A = L'\(L\A(working_set,:)');
            schur = A(working_set,:)*Ginv_A;
            [Q,R] = qr(schur);
