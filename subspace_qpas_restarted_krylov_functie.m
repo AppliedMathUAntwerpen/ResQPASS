@@ -68,7 +68,7 @@ for it=1:maxit
     f = [f,-b'*AV(:,end)];
 
     %QPAS solution (inner iteration)
-    [y, ws, nIters(it), lagMult] = qpas_schur(L,f',[V;-V],[u,-l],[y;0],ws,[],[],maxInnerIt);
+    [y, ws, nIters(it), lagMult] = qpas_schur(L,f',[-V;V],[-l,u],[y;0],ws,[],[],maxInnerIt);
 
     % Extract the lambda en mu out of the lagrange multipliers given by qpas
     LAMBDA = zeros(2*N,1);
@@ -88,7 +88,7 @@ for it=1:maxit
     obj(it) = temp'*temp;
 
     % Compute the residual (new basis vector)
-    v = A'*temp + lam -mu;
+    v = A'*temp - lam + mu;
     V = [V v/norm(v)];
     res(it) = norm(v);
     
