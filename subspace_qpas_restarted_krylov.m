@@ -57,14 +57,16 @@ u(1:m) =  0.5*abs(x_exact(1:m))+1e-2;
 % u =  ones(N,1);
 %%  exact solution
 
-
+tic
 sol = quadprog(H,f,[],[],[],[], l, u);
 
 exact_obj(i) = (A*sol-b)'*(A*sol-b);
+toc
 %% Approximate solution
+tic
 [y,V,x,obj{i},res{i},WS,~,LAM,MU] = subspace_qpas_restarted_krylov_functie(A,b,l,u);
 % [y,V,x,obj,res,WS,nIters,LAM,MU] = subspace_qpas_restarted_krylov_functie(A,b,l,u);
-
+toc
 
 end
 
