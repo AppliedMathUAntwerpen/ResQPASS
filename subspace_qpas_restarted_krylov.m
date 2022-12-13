@@ -7,7 +7,7 @@ close all; clear all
 
 rng('default')
 
-% sizes
+% sizesc
 M = 1000;
 N = 600;
 
